@@ -111,23 +111,23 @@ lagknot = equalknots(minlag:maxlag, 2)
 
 var <- lag_RR
 basis_RR <- crossbasis(var,
-                       argvar = list(fun = "lin"),
-                       arglag = list(fun = "lin"))
+                       argvar = list(fun = "ns", knots = equalknots(datos_totales$RR, 2)),
+                       arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_Precip
 basis_Precip <- crossbasis(var,
-                           argvar = list(fun = "lin"),
-                           arglag = list(fun = "lin"))
+                           argvar = list(fun = "ns", knots = equalknots(datos_totales$Precip_t, 2)),
+                           arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_Nino3SSTA
 basis_Nino3SSTA <- crossbasis(var,
-                              argvar = list(fun = "lin"),
-                              arglag = list(fun = "lin"))
+                              argvar = list(fun = "ns", knots = equalknots(datos_totales$Nino3SSTA, 2)),
+                              arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_TNA
 basis_TNA <- crossbasis(var,
-                        argvar = list(fun = "lin"),
-                        arglag = list(fun = "lin"))
+                        argvar = list(fun = "ns", knots = equalknots(datos_totales$TNA, 2)),
+                        arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 colnames(basis_RR) = paste0("b_rr", colnames(basis_RR))
 colnames(basis_Precip) = paste0("b_prec", colnames(basis_Precip))
@@ -137,43 +137,43 @@ colnames(basis_TNA) = paste0("b_TNA", colnames(basis_TNA))
 ##########################
 var <- lag_Nino12SSTA
 basis_Nino12SSTA <- crossbasis(var,
-                               argvar = list(fun = "lin"),
-                               arglag = list(fun = "lin"))
+                               argvar = list(fun = "ns", knots = equalknots(datos_totales$Nino12SSTA, 2)),
+                               arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_Nino4SSTA
 basis_Nino4SSTA <- crossbasis(var,
-                              argvar = list(fun = "lin"),
-                              arglag = list(fun = "lin"))
+                              argvar = list(fun = "ns", knots = equalknots(datos_totales$Nino4SSTA, 2)),
+                              arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_Nino34SSTA
 basis_Nino34SSTA <- crossbasis(var,
-                               argvar = list(fun = "lin"),
-                               arglag = list(fun = "lin"))
+                               argvar = list(fun = "ns", knots = equalknots(datos_totales$Nino34SSTA, 2)),
+                               arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_EVI
 basis_EVI <- crossbasis(var,
-                        argvar = list(fun = "lin"),
-                        arglag = list(fun = "lin"))
+                        argvar = list(fun = "ns", knots = equalknots(datos_totales$EVI, 2)),
+                        arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_NDVI
 basis_NDVI <- crossbasis(var,
-                         argvar = list(fun = "lin"),
-                         arglag = list(fun = "lin"))
+                         argvar = list(fun = "ns", knots = equalknots(datos_totales$NDVI, 2)),
+                         arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_NDWI
 basis_NDWI <- crossbasis(var,
-                         argvar = list(fun = "lin"),
-                         arglag = list(fun = "lin"))
+                         argvar = list(fun = "ns", knots = equalknots(datos_totales$NDWI, 2)),
+                         arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_LSD
 basis_LSD <- crossbasis(var,
-                        argvar = list(fun = "lin"),
-                        arglag = list(fun = "lin"))
+                        argvar = list(fun = "ns", knots = equalknots(datos_totales$LSD, 2)),
+                        arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 var <- lag_LSN
 basis_LSN <- crossbasis(var,
-                        argvar = list(fun = "lin"),
-                        arglag = list(fun = "lin"))
+                        argvar = list(fun = "ns", knots = equalknots(datos_totales$LSN, 2)),
+                        arglag = list(fun = "ns", knots = (maxlag-minlag)/2))
 
 colnames(basis_Nino12SSTA) = paste0("b_nino12", colnames(basis_Nino12SSTA))
 colnames(basis_Nino4SSTA) = paste0("b_nino3", colnames(basis_Nino4SSTA))
@@ -183,6 +183,7 @@ colnames(basis_NDVI) = paste0("b_NDVI", colnames(basis_NDVI))
 colnames(basis_NDWI) = paste0("b_NDWI", colnames(basis_NDWI))
 colnames(basis_LSD) = paste0("b_LSD", colnames(basis_LSD))
 colnames(basis_LSN) = paste0("b_LSN", colnames(basis_LSN))
+
 
 #######################################
 
@@ -203,49 +204,29 @@ df1$Cases[df1$Year==18]<-NA
 # define priors
 precision.prior <- list(prec = list(prior = "pc.prec", param = c(0.5, 0.01)))
 
-
+# output plot 
+indices_cantones <- c(5,6,7,14,19,23,25,26,27,31)
+indices_cantones <- c(18,7,28,1,25,19,32,24,16)
 
 # 1. Estimation --------------------------------------------------------------
 
 # Models
-baseformula1 <- Y ~ 1 + f(Month, replicate = cluster6_mvc, model = "rw1", cyclic = TRUE, constr = TRUE,
-                          scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
-  basis_RR + basis_Precip + basis_Nino34SSTA + basis_TNA
-
-baseformula2 <- Y ~ 1 + f(Month, replicate = cluster6_wl, model = "rw1", cyclic = TRUE, constr = TRUE,
-                          scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
-  basis_RR + basis_Precip + basis_Nino34SSTA + basis_TNA
-
-baseformula3 <- Y ~ 1 + f(Month, replicate = cluster7_wl, model = "rw1", cyclic = TRUE, constr = TRUE,
-                          scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
-  basis_RR + basis_Precip + basis_Nino34SSTA + basis_TNA
-
-baseformula4 <- Y ~ 1 + f(Month, replicate = nCanton, model = "rw1", cyclic = TRUE, constr = TRUE,
-                          scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
-  basis_RR + basis_Precip + basis_Nino34SSTA + basis_TNA
-
-baseformula5 <- Y ~ 1 + f(Month, replicate = nCanton, model = "rw1", cyclic = TRUE, constr = TRUE,
-                          scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
-  basis_RR + basis_Precip + 
-  basis_Nino34SSTA + basis_TNA + 
-  basis_EVI + basis_NDVI + basis_NDWI + basis_LSD + basis_LSN
-
 ##
-baseformula6.1 <- Y ~ 1 + f(Month, replicate = nCanton, model = "rw1", cyclic = TRUE, constr = TRUE,
+baseformula7.1 <- Y ~ 1 + f(Month, replicate = nCanton, model = "rw1", cyclic = TRUE, constr = TRUE,
                             scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
   basis_RR + basis_Precip + 
   basis_Nino34SSTA + basis_TNA + 
   basis_NDVI + 
   basis_LSD 
 
-baseformula6.2 <- Y ~ 1 + f(Month, replicate = cluster6_mvc, model = "rw1", cyclic = TRUE, constr = TRUE,
+baseformula7.2 <- Y ~ 1 + f(Month, replicate = cluster6_mvc, model = "rw1", cyclic = TRUE, constr = TRUE,
                           scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
   basis_RR + basis_Precip + 
   basis_Nino34SSTA + basis_TNA + 
   basis_NDVI + 
   basis_LSD 
 
-baseformula6.3 <- Y ~ 1 + f(Month, replicate = cluster6_wl, model = "rw1", cyclic = TRUE, constr = TRUE,
+baseformula7.3 <- Y ~ 1 + f(Month, replicate = cluster6_wl, model = "rw1", cyclic = TRUE, constr = TRUE,
                             scale.model = TRUE,  hyper = precision.prior) + f(nCanton, model="iid") + 
   basis_RR + basis_Precip + 
   basis_Nino34SSTA + basis_TNA + 
@@ -253,65 +234,8 @@ baseformula6.3 <- Y ~ 1 + f(Month, replicate = cluster6_wl, model = "rw1", cycli
   basis_LSD 
 
 
-formula<-baseformula1
-model1 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
-               control.inla = list(strategy = 'adaptive'), 
-               control.compute = list(dic = TRUE, config = FALSE, 
-                                      cpo = TRUE, return.marginals = FALSE),
-               control.fixed = list(correlation.matrix = TRUE, 
-                                    prec.intercept = 1, prec = 1),
-               control.predictor = list(link = 1, compute = TRUE), 
-               verbose = FALSE)
-model1 <- inla.rerun(model1)
-
-formula<-baseformula2
-model2 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
-               control.inla = list(strategy = 'adaptive'), 
-               control.compute = list(dic = TRUE, config = FALSE, 
-                                      cpo = TRUE, return.marginals = FALSE),
-               control.fixed = list(correlation.matrix = TRUE, 
-                                    prec.intercept = 1, prec = 1),
-               control.predictor = list(link = 1, compute = TRUE), 
-               verbose = FALSE)
-model2 <- inla.rerun(model2)
-
-formula<-baseformula3
-model3 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
-               control.inla = list(strategy = 'adaptive'), 
-               control.compute = list(dic = TRUE, config = FALSE, 
-                                      cpo = TRUE, return.marginals = FALSE),
-               control.fixed = list(correlation.matrix = TRUE, 
-                                    prec.intercept = 1, prec = 1),
-               control.predictor = list(link = 1, compute = TRUE), 
-               verbose = FALSE)
-model3 <- inla.rerun(model3)
-
-formula<-baseformula4
-model4 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
-               control.inla = list(strategy = 'adaptive'), 
-               control.compute = list(dic = TRUE, config = FALSE, 
-                                      cpo = TRUE, return.marginals = FALSE),
-               control.fixed = list(correlation.matrix = TRUE, 
-                                    prec.intercept = 1, prec = 1),
-               control.predictor = list(link = 1, compute = TRUE), 
-               verbose = FALSE)
-model4 <- inla.rerun(model4)
-
-formula<-baseformula5
-model5 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
-               control.inla = list(strategy = 'adaptive'), 
-               control.compute = list(dic = TRUE, config = FALSE, 
-                                      cpo = TRUE, return.marginals = FALSE),
-               control.fixed = list(correlation.matrix = TRUE, 
-                                    prec.intercept = 1, prec = 1),
-               control.predictor = list(link = 1, compute = TRUE), 
-               verbose = FALSE)
-model5 <- inla.rerun(model5)
-
-
-
-formula<-baseformula6.1
-model6.1 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
+formula<-baseformula7.1
+model7.1 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
                  control.inla = list(strategy = 'adaptive'), 
                  control.compute = list(dic = TRUE, config = FALSE, 
                                         cpo = TRUE, return.marginals = FALSE),
@@ -319,10 +243,10 @@ model6.1 <- inla(formula = formula, data = df, family = "nbinomial", offset = OF
                                       prec.intercept = 1, prec = 1),
                  control.predictor = list(link = 1, compute = TRUE), 
                  verbose = FALSE)
-model6.1 <- inla.rerun(model6.1)
+model7.1 <- inla.rerun(model7.1)
 
-formula<-baseformula6.2
-model6.2 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
+formula<-baseformula7.2
+model7.2 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
                  control.inla = list(strategy = 'adaptive'), 
                  control.compute = list(dic = TRUE, config = FALSE, 
                                         cpo = TRUE, return.marginals = FALSE),
@@ -330,10 +254,10 @@ model6.2 <- inla(formula = formula, data = df, family = "nbinomial", offset = OF
                                       prec.intercept = 1, prec = 1),
                  control.predictor = list(link = 1, compute = TRUE), 
                  verbose = FALSE)
-model6.2 <- inla.rerun(model6.2)
+model7.2 <- inla.rerun(model7.2)
 
-formula<-baseformula6.3
-model6.3 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
+formula<-baseformula7.3
+model7.3 <- inla(formula = formula, data = df, family = "nbinomial", offset = OFF,
                  control.inla = list(strategy = 'adaptive'), 
                  control.compute = list(dic = TRUE, config = FALSE, 
                                         cpo = TRUE, return.marginals = FALSE),
@@ -341,7 +265,7 @@ model6.3 <- inla(formula = formula, data = df, family = "nbinomial", offset = OF
                                       prec.intercept = 1, prec = 1),
                  control.predictor = list(link = 1, compute = TRUE), 
                  verbose = FALSE)
-model6.3 <- inla.rerun(model6.3)
+model7.3 <- inla.rerun(model7.3)
 
 
 #model 1: Month |cluster_DTW6
@@ -355,36 +279,18 @@ model6.3 <- inla.rerun(model6.3)
 #model 6.2: model +selected variables + Month |cluster_wavelets6
 
 #CPO
-sum(-log(model1$cpo$cpo))
-sum(-log(model2$cpo$cpo))
-sum(-log(model3$cpo$cpo))
-sum(-log(model4$cpo$cpo))
-sum(-log(model5$cpo$cpo))
-
-sum(-log(model6.1$cpo$cpo))
-sum(-log(model6.2$cpo$cpo))
-sum(-log(model6.3$cpo$cpo))
+sum(-log(model7.1$cpo$cpo))
+sum(-log(model7.2$cpo$cpo))
+sum(-log(model7.3$cpo$cpo))
 
 #DIC
-model1$dic$dic
-model2$dic$dic
-model3$dic$dic
-model4$dic$dic
-model5$dic$dic
+model7.1$dic$dic
+model7.2$dic$dic
+model7.3$dic$dic
 
-model6.1$dic$dic
-model6.2$dic$dic
-model6.3$dic$dic
+# Model 7.2 output ----------------------------------------------------------
 
-
-# output plot 
-indices_cantones <- c(5,6,7,14,19,23,25,26,27,31)
-indices_cantones <- c(18,7,28,1,25,19,32,24,16)
-indices_cantones <- c(20)
-
-# Model 6.2 output ----------------------------------------------------------
-
-model<-model6.2
+model<-model7.2
 summary(model)
 
 
@@ -407,7 +313,7 @@ month.effect.cluster<-month_effects %>%
   # organise by state name in grid file
   facet_wrap( ~state_code)
 
-ggsave(month.effect.cluster, filename = "results/Model6.2.month.effect.cluster.jpg", height = 20, width = 20)
+ggsave(month.effect.cluster, filename = "results/Model7.2.month.effect.cluster.jpg", height = 20, width = 20)
 
 
 canton_effects <- data.frame(canton=unique(df$Canton),
@@ -427,7 +333,7 @@ canton.effect<-canton_effects %>% ggplot(aes(y=canton,x=effect.mean))+
   geom_vline(xintercept = 3, linetype="dashed", colour="red")+
   scale_x_continuous(limits=c(-4,4),breaks=seq(-4,4,1))
 
-ggsave(canton.effect, filename = "results/Model6.2.canton.effect.jpg", height = 20, width = 20)
+ggsave(canton.effect, filename = "results/Model7.2.canton.effect.jpg", height = 20, width = 20)
 
 
 fitted.Case<-model$summary.fitted.values %>% 
@@ -452,7 +358,7 @@ prediction.in <- df.final.in %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.in, filename = "results/Model6.2.prediction.Case.in.jpg", height = 20, width = 20)
+ggsave(prediction.in, filename = "results/Model7.2.prediction.Case.in.jpg", height = 20, width = 20)
 
 
 prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
@@ -468,7 +374,7 @@ prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.out, filename = "results/Model6.2.prediction.Case.out.jpg", height = 20, width = 20)
+ggsave(prediction.out, filename = "results/Model7.2.prediction.Case.out.jpg", height = 20, width = 20)
 
 
 
@@ -498,7 +404,7 @@ prediction.in <- df.final.in %>% filter(nCanton %in% indices_cantones) %>%
   theme_bw() + 
   facet_wrap( ~Canton, scales = "free")
 
-ggsave(prediction.in, filename = "results/Model6.2.prediction.RR.in.jpg", height = 20, width = 20)
+ggsave(prediction.in, filename = "results/Model7.2.prediction.RR.in.jpg", height = 20, width = 20)
 
 
 ###
@@ -516,7 +422,7 @@ prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.out, filename = "results/Model6.2.prediction.RR.out.jpg", height = 20, width = 20)
+ggsave(prediction.out, filename = "results/Model7.2.prediction.RR.out.jpg", height = 20, width = 20)
 
 
 
@@ -542,14 +448,14 @@ base_grafico_out_g <- base.out %>% group_by(Canton)
 
 metricas_tot_in <- base_grafico_in_g %>% group_modify(~metricas(.x))
 metricas_tot_out <- base_grafico_out_g %>% group_modify(~metricas(.x))
-write_csv(metricas_tot_in,file = 'results/metricas_cluster_DTW6_INLA_in.csv')
-write_csv(metricas_tot_out,file = 'results/metricas_cluster_DTW6_INLA_out.csv')
+write_csv(metricas_tot_in,file = 'results/metricas_cluster_DTW6_INLA_nolineal_in.csv')
+write_csv(metricas_tot_out,file = 'results/metricas_cluster_DTW6_INLA_nolineal_out.csv')
 
 
 
-# Model 6.1 output ----------------------------------------------------------
+# Model 7.1 output ----------------------------------------------------------
 
-model<-model6.1
+model<-model7.1
 
 month_effects <- data.table(cbind(rep(unique(df$Canton), each = 12),
                                   model$summary.random$Month))
@@ -570,7 +476,7 @@ month.effect.canton<-month_effects %>%
   # organise by state name in grid file
   facet_wrap( ~state_code)
 
-ggsave(month.effect.canton, filename = "results/Model6.1.month.effect.canton.jpg", height = 20, width = 20)
+ggsave(month.effect.canton, filename = "results/Model7.1.month.effect.canton.jpg", height = 20, width = 20)
 
 
 canton_effects <- data.frame(canton=unique(df$Canton),
@@ -590,7 +496,7 @@ canton.effect<-canton_effects %>% ggplot(aes(y=canton,x=effect.mean))+
   geom_vline(xintercept = 3, linetype="dashed", colour="red")+
   scale_x_continuous(limits=c(-4,4),breaks=seq(-4,4,1))
 
-ggsave(canton.effect, filename = "results/Model6.1.canton.effect.jpg", height = 20, width = 20)
+ggsave(canton.effect, filename = "results/Model7.1.canton.effect.jpg", height = 20, width = 20)
 
 
 
@@ -616,7 +522,7 @@ prediction.in <- df.final.in %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.in, filename = "results/Model6.1.prediction.Case.in.jpg", height = 20, width = 20)
+ggsave(prediction.in, filename = "results/Model7.1.prediction.Case.in.jpg", height = 20, width = 20)
 
 
 prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
@@ -632,7 +538,7 @@ prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.out, filename = "results/Model6.1.prediction.Case.out.jpg", height = 20, width = 20)
+ggsave(prediction.out, filename = "results/Model7.1.prediction.Case.out.jpg", height = 20, width = 20)
 
 
 
@@ -661,7 +567,7 @@ prediction.in <- df.final.in %>% filter(nCanton %in% indices_cantones) %>%
   theme_bw() + 
   facet_wrap( ~Canton, scales = "free")
 
-ggsave(prediction.in, filename = "results/Model6.1.prediction.RR.in.jpg", height = 20, width = 20)
+ggsave(prediction.in, filename = "results/Model7.1.prediction.RR.in.jpg", height = 20, width = 20)
 
 
 ###
@@ -679,7 +585,7 @@ prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.out, filename = "results/Model6.1.prediction.RR.out.jpg", height = 20, width = 20)
+ggsave(prediction.out, filename = "results/Model7.1.prediction.RR.out.jpg", height = 20, width = 20)
 
 
 
@@ -698,14 +604,14 @@ base_grafico_out_g <- base.out %>% group_by(Canton)
 
 metricas_tot_in <- base_grafico_in_g %>% group_modify(~metricas(.x))
 metricas_tot_out <- base_grafico_out_g %>% group_modify(~metricas(.x))
-write_csv(metricas_tot_in,file = 'results/metricas_Canton_INLA_in.csv')
-write_csv(metricas_tot_out,file = 'results/metricas_Canton_INLA_out.csv')
+write_csv(metricas_tot_in,file = 'results/metricas_Canton_INLA_nolineal_in.csv')
+write_csv(metricas_tot_out,file = 'results/metricas_Canton_INLA_nolineal_out.csv')
 
 
 
-# Model 6.3 output ----------------------------------------------------------
+# Model 7.3 output ----------------------------------------------------------
 
-model<-model6.3
+model<-model7.3
 
 month_effects <- data.table(cbind(rep(unique(df$cluster6_wl), each = 12),
                                   model$summary.random$Month))
@@ -726,7 +632,7 @@ month.effect.canton<-month_effects %>%
   # organise by state name in grid file
   facet_wrap( ~state_code)
 
-ggsave(month.effect.canton, filename = "results/Model6.3.month.effect.canton.jpg", height = 20, width = 20)
+ggsave(month.effect.canton, filename = "results/Model7.3.month.effect.canton.jpg", height = 20, width = 20)
 
 
 canton_effects <- data.frame(canton=unique(df$Canton),
@@ -746,7 +652,7 @@ canton.effect<-canton_effects %>% ggplot(aes(y=canton,x=effect.mean))+
   geom_vline(xintercept = 3, linetype="dashed", colour="red")+
   scale_x_continuous(limits=c(-4,4),breaks=seq(-4,4,1))
 
-ggsave(canton.effect, filename = "results/Model6.3.canton.effect.jpg", height = 20, width = 20)
+ggsave(canton.effect, filename = "results/Model7.3.canton.effect.jpg", height = 20, width = 20)
 
 
 
@@ -772,7 +678,7 @@ prediction.in <- df.final.in %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.in, filename = "results/Model6.3.prediction.Case.in.jpg", height = 20, width = 20)
+ggsave(prediction.in, filename = "results/Model7.3.prediction.Case.in.jpg", height = 20, width = 20)
 
 
 prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
@@ -788,7 +694,7 @@ prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.out, filename = "results/Model6.3.prediction.Case.out.jpg", height = 20, width = 20)
+ggsave(prediction.out, filename = "results/Model7.3.prediction.Case.out.jpg", height = 20, width = 20)
 
 
 
@@ -817,7 +723,7 @@ prediction.in <- df.final.in %>% filter(nCanton %in% indices_cantones) %>%
   theme_bw() + 
   facet_wrap( ~Canton, scales = "free")
 
-ggsave(prediction.in, filename = "results/Model6.3.prediction.RR.in.jpg", height = 20, width = 20)
+ggsave(prediction.in, filename = "results/Model7.3.prediction.RR.in.jpg", height = 20, width = 20)
 
 
 ###
@@ -835,7 +741,7 @@ prediction.out<-df.final.out %>% filter(nCanton %in% indices_cantones) %>%
   # organise by state name in grid file
   facet_wrap( ~Canton,scales="free")
 
-ggsave(prediction.out, filename = "results/Model6.3.prediction.RR.out.jpg", height = 20, width = 20)
+ggsave(prediction.out, filename = "results/Model7.3.prediction.RR.out.jpg", height = 20, width = 20)
 
 
 
@@ -854,7 +760,7 @@ base_grafico_out_g <- base.out %>% group_by(Canton)
 
 metricas_tot_in <- base_grafico_in_g %>% group_modify(~metricas(.x))
 metricas_tot_out <- base_grafico_out_g %>% group_modify(~metricas(.x))
-write_csv(metricas_tot_in,file = 'results/metricas_cluster_wl6_INLA_in.csv')
-write_csv(metricas_tot_out,file = 'results/metricas_cluster_wl6_INLA_out.csv')
+write_csv(metricas_tot_in,file = 'results/metricas_cluster_wl6_INLA_nolineal_in.csv')
+write_csv(metricas_tot_out,file = 'results/metricas_cluster_wl6_INLA_nolineal_out.csv')
 # cases -------------------------------------------------------------------
 
